@@ -1,17 +1,18 @@
-from collections import defaultdict
-import os
-import sys
-from strictyaml import load as loadyaml
-import shutil
-from glob import glob
-from tempfile import TemporaryDirectory
 import contextlib
-from typing import Literal, NamedTuple, NoReturn, TypeAlias
-import logging
-from rich.logging import RichHandler
-from hashlib import sha256
 import importlib
 import importlib.util
+import logging
+import os
+import shutil
+import sys
+from collections import defaultdict
+from glob import glob
+from hashlib import sha256
+from tempfile import TemporaryDirectory
+from typing import NamedTuple, NoReturn
+
+from rich.logging import RichHandler
+from strictyaml import load as loadyaml
 
 logging.basicConfig(level=logging.DEBUG, format="%(name)s: %(message)s", handlers=[RichHandler()])
 log = logging.getLogger("core")
@@ -106,7 +107,7 @@ class AboutPlugin(NamedTuple):
 
 def load_plugin(about_plugin: AboutPlugin):
     hashn = sha256(about_plugin.name.encode()).hexdigest()
-    full_name = f"_transmute_generated.plugins.{hashn}"
+    full_name = f"_alter_generated.plugins.{hashn}"
     importspec = importlib.util.spec_from_file_location(full_name, about_plugin.path)
     if importspec is None:
         log.error("Cannot load a plugin from %s", about_plugin.path)
@@ -133,12 +134,12 @@ def check_consistency(plugin_list: list[AboutPlugin], requirements: dict[str, li
     return available_names
 
 
-def main():
-    conf_path = os.environ.get("TRANSMUTE_CONF", "../../alter.yaml")
+def run_cli():
+    conf_path = os.environ.get("ALTER_CONF", "alter.yaml")
     if not os.path.exists(conf_path):
         stop(
             f"No configuration file found at {conf_path}. "
-            f"Set TRANSMUTE_CONF or create transmute.toml in the working directory."
+            f"Set ALTER_CONF or create alter.toml in the working directory."
         )
     with open(conf_path) as f:
         raw_conf = f.read()
@@ -197,4 +198,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_cli()

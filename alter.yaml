@@ -1,6 +1,6 @@
 collect:
     rules:
-        - 'example_document/*'
+        - 'example/*'
 preprocess:
 
 build:

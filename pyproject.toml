@@ -23,6 +23,10 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13"
 ]
+dependencies = [
+    "strictyaml >= 1.7.3",
+    "rich ~= 13.7.0"
+]
 
 [project.urls]
 Homepage = "https://github.com/penguinencounter/pyalterable"
