@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "collect": {
+      "$ref": "#/definitions/collect_group"
+    },
+    "preprocess": {
+      "$ref": "#/definitions/preprocess_group"
+    },
+    "build": {
+      "$ref": "#/definitions/build_group"
+    },
+    "plugins": {
+      "$ref": "#/definitions/plugins_group"
+    }
+  },
+  "additionalProperties": false,
+  "required": ["collect"],
+  "definitions": {
+    "collect_group": {
+      "type": "object",
+      "properties": {
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["rules"]
+    },
+    "preprocess_group": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/can_use_mixin"
+        }
+      ]
+    },
+    "build_group": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/build"
+      }
+    },
+    "build": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/can_use_mixin"
+        },
+        {
+          "$comment": "TODO"
+        }
+      ]
+    },
+    "plugins_group": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/plugin"
+      }
+    },
+    "plugin": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/can_use_mixin"
+        },
+        {
+          "$ref": "#/definitions/plugin_mixin"
+        }
+      ]
+    },
+    "plugin_mixin": {
+      "properties": {
+        "provides": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "path": {
+          "type": "string"
+        },
+        "pipeline": {
+          "type": "object",
+          "oneOf": [
+            {
+              "properties": {
+                "target": {
+                  "const": "file"
+                },
+                "match": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": ["match"]
+            },
+            {
+              "properties": {
+                "target": {
+                  "const": "project"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "entrypoint": {
+              "type": "string"
+            }
+          },
+          "required": ["target", "entrypoint"],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "required": ["path"]
+    },
+    "can_use_mixin": {
+      "properties": {
+        "use": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

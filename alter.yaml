@@ -1,0 +1,34 @@
+collect:
+    rules:
+        - 'example_document/*'
+preprocess:
+
+build:
+    full:
+        use:
+            - image_replace
+        exclude:
+            - '404\.(html|js|ts|css)$'
+
+plugins:
+    parse_html:
+        provides:
+            - parse_html
+            - collide
+        path: Plugins/parse_html.py
+        pipeline:
+            target: file
+            match:
+                - '.*\.html'
+            entrypoint: main
+    image_replace:
+        provides:
+            - image_replace
+        use:
+            - parse_html
+        path: Plugins/image_replace.py
+        pipeline:
+            target: file
+            match:
+                - '.*\.html'
+            entrypoint: main
