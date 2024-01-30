@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "alterable"
-version = "0.0.1"
+version = "0.0.2.dev1"
 authors = [
     { name = "PenguinEncounter", email = "penguinencounter2+pypi01@gmail.com" }
 ]
@@ -30,3 +30,8 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/penguinencounter/pyalterable"
+
+[project.scripts]
+alterable = "alterable.build:run_cli"
+
+[tool.hatch]
