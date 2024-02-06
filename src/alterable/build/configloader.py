@@ -6,7 +6,7 @@ from os import PathLike
 import rich
 from rich.markup import escape
 from strictyaml import load as load_yaml, Map, Str, Seq, Optional, UniqueSeq, MapPattern, EmptyList, Enum, YAML, \
-    YAMLError, Any
+    YAMLError, Any, EmptyDict
 from strictyaml.ruamel.error import MarkedYAMLError
 from strictyaml.validators import MapValidator, Validator
 from strictyaml.yamllocation import YAMLChunk
@@ -76,14 +76,14 @@ schema = Map({
     "collect": Map({
         "rules": _patterns(False),
     }),
-    Optional("preprocess"): Map({
-        "use": _slots(),
+    Optional("preprocess"): EmptyDict() | Map({
+        Optional("use"): _slots(),
     }),
-    Optional("build"): MapPattern(Str(), Map({
+    Optional("build"): EmptyDict() | MapPattern(Str(), Map({
         Optional("use"): _slots(),
         Optional("exclude"): _patterns(True),
     })),
-    Optional("plugins"): MapPattern(Str(), Map({
+    Optional("plugins"): EmptyDict() | MapPattern(Str(), Map({
         Optional("provides"): _slots(),
         Optional("use"): _slots(),
         "path": Str(),
