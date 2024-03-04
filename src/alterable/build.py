@@ -9,7 +9,7 @@ from collections import defaultdict
 from glob import glob
 from hashlib import sha256
 from tempfile import TemporaryDirectory
-from typing import NamedTuple, NoReturn
+from typing import NamedTuple, NoReturn, Optional
 
 from rich.logging import RichHandler
 from strictyaml import load as loadyaml
@@ -113,25 +113,63 @@ def load_plugin(about_plugin: AboutPlugin):
         log.error("Cannot load a plugin from %s", about_plugin.path)
 
 
-def check_consistency(plugin_list: list[AboutPlugin], requirements: dict[str, list[str]]):
+def check_deps_simple(plugin_list: list[AboutPlugin], requirements: dict[str, list[str]]):
     available_names: set[str] = set()
+    provides: dict[str, list[AboutPlugin]] = defaultdict(list)
     for plugin in plugin_list:
         for provided in plugin.provides:
+            provides[provided].append(plugin)
             if provided in available_names:
-                log.warning(f"Plugin: '{provided}' from more than one source.")
+                log.info(f"Plugin: '{provided}' from more than one source."
+                         f" If you're trying to avoid circular dependencies, ignore this message.")
             available_names.add(provided)
     missing = set(requirements.keys()) - available_names
     if len(missing) > 0:
         names = []
         for name in missing:
             names.append(f"'{name}' (from {', '.join(requirements[name])})")
-        stop(f"Plugin consistency error: unmet requirements: {', '.join(names)}")
+        stop(f"Plugin dependency error: unmet requirements: {', '.join(names)}")
     else:
         log.info(
-            f"Plugin consistency check passed. {len(available_names)} slots provided, "
+            f"Plugin check first pass OK; {len(available_names)} slots provided, "
             f"{len(requirements)} slots requested."
         )
-    return available_names
+    return available_names, provides
+
+
+def check_deps_complex(plugin_list: list[AboutPlugin], providers: dict[str, list[AboutPlugin]]):
+    def check(target: AboutPlugin, current: Optional[AboutPlugin] = None, visited: Optional[list[str]] = None):
+        if visited is None:
+            visited = list()
+        if current is None:
+            current = target
+        if current.name in visited:
+            log.warning(
+                f"Plugins: while resolving '{current.name}' for '{target.name}': circular dependency "
+                f"{' -> '.join(visited)} -> {current.name}")
+            return False, {}
+        visited.append(current.name)
+
+        for slot in current.use:
+            valid_deps_from_here = set()
+            for i, provider in enumerate(providers[slot]):
+                if i > 0:
+                    log.info(f"attempt #{i + 1}: resolve '{slot}' dependency with '{provider.name}'")
+                ok, extra = check(target=target, current=provider, visited=visited.copy())
+                if ok:
+                    valid_deps_from_here.add(provider.name)
+                    break
+            if len(valid_deps_from_here) == 0:
+                log.warning(f"Plugins: no plugin providing '{slot}' (used by {current.name}) "
+                            f"can resolve when starting with {target.name}")
+                return False, (f"\nall {len(providers[slot])} plugins providing '{slot}' "
+                               f"can't be resolved when starting with {target.name}")
+        return True, None
+
+    for plugin in plugin_list:
+        check_ok, check_info = check(plugin)
+        if not check_ok:
+            stop(f"Plugin dependency error: cannot satisfy requirements for '{plugin.name}': {check_info}")
 
 
 def run_cli():
@@ -183,7 +221,8 @@ def run_cli():
             stop(f"Invalid type: preprocess.use should be list, is actually {type(pre_conf['use'])}")
         for slot in pre_conf["use"]:
             all_requirements[slot].append("'preprocess' action")
-    available_slots = check_consistency(plugins, all_requirements)
+    available_slots, providers = check_deps_simple(plugins, all_requirements)
+    check_deps_complex(plugins, providers)
     log.info("%d plugins ready", len(raw_plugins))
 
     with prepare_env(sources) as presrc:

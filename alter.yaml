@@ -32,3 +32,40 @@ plugins:
             match:
                 - '.*\.html'
             entrypoint: main
+    test1:
+        use:
+            - collidable
+        path: Plugins/test1.py
+        pipeline:
+            target: project
+    test2:
+        provides:
+            - collidable
+        use:
+            - test1
+        path: Plugins/test2.py
+        pipeline:
+            target: project
+    test3:
+        provides:
+            - collidable
+            - example
+        use:
+            - example
+        path: Plugins/test2.py
+        pipeline:
+            target: project
+    test4:
+        provides:
+            - example
+        use:
+            - collidable
+        path: Plugins/test2.py
+        pipeline:
+            target: project
+    test5:
+        provides:
+            - example
+        path: Plugins/test2.py
+        pipeline:
+            target: project
