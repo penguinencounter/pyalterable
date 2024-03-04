@@ -1,18 +1,18 @@
 import contextlib
-import importlib
-import importlib.util
 import logging
 import os
 import shutil
 import sys
 from collections import defaultdict
 from glob import glob
-from hashlib import sha256
 from tempfile import TemporaryDirectory
-from typing import NamedTuple, NoReturn, Optional
+from typing import NoReturn, Optional
 
 from rich.logging import RichHandler
 from strictyaml import load as loadyaml
+
+from alterable.build import configloader
+from ..api.plugin import AboutPlugin
 
 logging.basicConfig(level=logging.DEBUG, format="%(name)s: %(message)s", handlers=[RichHandler()])
 log = logging.getLogger("core")
@@ -49,68 +49,6 @@ def prepare_env(sources: list[str]):
             else:
                 shutil.copy(source, tmpdir)
         yield tmpdir
-
-
-class PluginPipelineInfo(NamedTuple):
-    target: str
-
-    @classmethod
-    def load(cls, template: dict):
-        return cls("file")
-
-
-class AboutPlugin(NamedTuple):
-    name: str
-    provides: set[str]
-    use: list[str]
-    path: str
-    pipeline: PluginPipelineInfo
-
-    @classmethod
-    def load(cls, name: str, template: dict):
-        log.debug("Constructing plugin data for %s", name)
-        provides = template.get("provides", [])
-        provide_lst: set[str] = set()
-        if isinstance(provides, str):
-            provide_lst.add(provides)
-        elif isinstance(provides, list):
-            provide_lst.update(provides)
-        else:
-            stop(
-                f"While loading plugin {name} info: 'provides' is not list or string or nothing (actually {provides=})"
-            )
-        provide_lst.add(name)
-        use = template.get("use", [])
-        if not isinstance(use, list):
-            stop(
-                f"While loading plugin {name} info: 'use' is not list or nothing (actually {use=})"
-            )
-        path = template.get("path")
-        if path is None:
-            stop(f"While loading plugin {name} info: no source path")
-
-        pipeline_data = template.get("pipeline")
-        if pipeline_data is None:
-            stop(f"While loading plugin {name} info: no pipeline info")
-        elif not isinstance(pipeline_data, dict):
-            stop(
-                f"While loading plugin {name} info: 'pipeline' is not table (actually {pipeline_data=})"
-            )
-        return cls(
-            name=name,
-            provides=provide_lst,
-            use=use,
-            path=path,
-            pipeline=PluginPipelineInfo.load(pipeline_data),
-        )
-
-
-def load_plugin(about_plugin: AboutPlugin):
-    hashn = sha256(about_plugin.name.encode()).hexdigest()
-    full_name = f"_alter_generated.plugins.{hashn}"
-    importspec = importlib.util.spec_from_file_location(full_name, about_plugin.path)
-    if importspec is None:
-        log.error("Cannot load a plugin from %s", about_plugin.path)
 
 
 def check_deps_simple(plugin_list: list[AboutPlugin], requirements: dict[str, list[str]]):
@@ -172,18 +110,14 @@ def check_deps_complex(plugin_list: list[AboutPlugin], providers: dict[str, list
             stop(f"Plugin dependency error: cannot satisfy requirements for '{plugin.name}': {check_info}")
 
 
-def run_cli():
+def run_cli() -> int:
     conf_path = os.environ.get("ALTER_CONF", "alter.yaml")
     if not os.path.exists(conf_path):
         stop(
             f"No configuration file found at {conf_path}. "
             f"Set ALTER_CONF or create alter.toml in the working directory."
         )
-    with open(conf_path) as f:
-        raw_conf = f.read()
-    conf = loadyaml(raw_conf).data
-    if not isinstance(conf, dict):
-        stop(f"Invalid type: configuration should be a dict, is actually {type(conf)}")
+    conf = configloader.load(conf_path).data
 
     # Collect
     collect_conf = conf.get("collect", {})
@@ -234,7 +168,8 @@ def run_cli():
             pre_use = pre_conf["use"]
             if not isinstance(pre_use, list):
                 stop(f"Invalid type: preprocess.use should be list, is actually {type(pre_use)}")
+    return 0
 
 
 if __name__ == "__main__":
-    run_cli()
+    exit(run_cli())

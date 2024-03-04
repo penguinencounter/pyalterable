@@ -1,7 +1,6 @@
 collect:
     rules:
         - 'example/*'
-preprocess:
 
 build:
     full:
@@ -28,7 +27,7 @@ plugins:
             - parse_html
         path: Plugins/image_replace.py
         pipeline:
-            target: file
+            target: project
             match:
                 - '.*\.html'
             entrypoint: main
