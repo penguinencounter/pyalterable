@@ -11,10 +11,13 @@ from typing import NoReturn, Optional
 from rich.logging import RichHandler
 from strictyaml import load as loadyaml
 
-from alterable.build import configloader
+from alterable.buildsystem import configloader
 from ..api.plugin import AboutPlugin
+from .resolves import compute as solve_compute
 
-logging.basicConfig(level=logging.DEBUG, format="%(name)s: %(message)s", handlers=[RichHandler()])
+logging.basicConfig(
+    level=logging.DEBUG, format="%(name)s: %(message)s", handlers=[RichHandler()]
+)
 log = logging.getLogger("core")
 
 
@@ -41,7 +44,9 @@ def prepare_env(sources: list[str]):
     Copy files into a new, temporary directory.
     """
     with TemporaryDirectory() as tmpdir:
-        log.debug("Created temporary directory %s from %d sources", tmpdir, len(sources))
+        log.debug(
+            "Created temporary directory %s from %d sources", tmpdir, len(sources)
+        )
         for source in sources:
             if os.path.isdir(source):
                 name = os.path.basename(source)
@@ -51,15 +56,19 @@ def prepare_env(sources: list[str]):
         yield tmpdir
 
 
-def check_deps_simple(plugin_list: list[AboutPlugin], requirements: dict[str, list[str]]):
+def check_deps_simple(
+    plugin_list: list[AboutPlugin], requirements: dict[str, list[str]]
+):
     available_names: set[str] = set()
     provides: dict[str, list[AboutPlugin]] = defaultdict(list)
     for plugin in plugin_list:
         for provided in plugin.provides:
             provides[provided].append(plugin)
             if provided in available_names:
-                log.info(f"Plugin: '{provided}' from more than one source."
-                         f" If you're trying to avoid circular dependencies, ignore this message.")
+                log.info(
+                    f"Plugin: '{provided}' from more than one source."
+                    f" If you're trying to avoid circular dependencies, ignore this message."
+                )
             available_names.add(provided)
     missing = set(requirements.keys()) - available_names
     if len(missing) > 0:
@@ -75,8 +84,14 @@ def check_deps_simple(plugin_list: list[AboutPlugin], requirements: dict[str, li
     return available_names, provides
 
 
-def check_deps_complex(plugin_list: list[AboutPlugin], providers: dict[str, list[AboutPlugin]]):
-    def check(target: AboutPlugin, current: Optional[AboutPlugin] = None, visited: Optional[list[str]] = None):
+def check_deps_complex(
+    plugin_list: list[AboutPlugin], providers: dict[str, list[AboutPlugin]]
+):
+    def check(
+        target: AboutPlugin,
+        current: Optional[AboutPlugin] = None,
+        visited: Optional[list[str]] = None,
+    ):
         if visited is None:
             visited = list()
         if current is None:
@@ -84,7 +99,8 @@ def check_deps_complex(plugin_list: list[AboutPlugin], providers: dict[str, list
         if current.name in visited:
             log.warning(
                 f"Plugins: while resolving '{current.name}' for '{target.name}': circular dependency "
-                f"{' -> '.join(visited)} -> {current.name}")
+                f"{' -> '.join(visited)} -> {current.name}"
+            )
             return False, {}
         visited.append(current.name)
 
@@ -92,22 +108,32 @@ def check_deps_complex(plugin_list: list[AboutPlugin], providers: dict[str, list
             valid_deps_from_here = set()
             for i, provider in enumerate(providers[slot]):
                 if i > 0:
-                    log.info(f"attempt #{i + 1}: resolve '{slot}' dependency with '{provider.name}'")
-                ok, extra = check(target=target, current=provider, visited=visited.copy())
+                    log.info(
+                        f"attempt #{i + 1}: resolve '{slot}' dependency with '{provider.name}'"
+                    )
+                ok, extra = check(
+                    target=target, current=provider, visited=visited.copy()
+                )
                 if ok:
                     valid_deps_from_here.add(provider.name)
                     break
             if len(valid_deps_from_here) == 0:
-                log.warning(f"Plugins: no plugin providing '{slot}' (used by {current.name}) "
-                            f"can resolve when starting with {target.name}")
-                return False, (f"\nall {len(providers[slot])} plugins providing '{slot}' "
-                               f"can't be resolved when starting with {target.name}")
+                log.warning(
+                    f"Plugins: no plugin providing '{slot}' (used by {current.name}) "
+                    f"can resolve when starting with {target.name}"
+                )
+                return False, (
+                    f"\nall {len(providers[slot])} plugins providing '{slot}' "
+                    f"can't be resolved when starting with {target.name}"
+                )
         return True, None
 
     for plugin in plugin_list:
         check_ok, check_info = check(plugin)
         if not check_ok:
-            stop(f"Plugin dependency error: cannot satisfy requirements for '{plugin.name}': {check_info}")
+            stop(
+                f"Plugin dependency error: cannot satisfy requirements for '{plugin.name}': {check_info}"
+            )
 
 
 def run_cli() -> int:
@@ -152,11 +178,13 @@ def run_cli() -> int:
             all_requirements[slot].append(f"'{plugin.name}' plugin")
     if "use" in pre_conf:
         if not isinstance(pre_conf["use"], list):
-            stop(f"Invalid type: preprocess.use should be list, is actually {type(pre_conf['use'])}")
+            stop(
+                f"Invalid type: preprocess.use should be list, is actually {type(pre_conf['use'])}"
+            )
         for slot in pre_conf["use"]:
             all_requirements[slot].append("'preprocess' action")
     available_slots, providers = check_deps_simple(plugins, all_requirements)
-    check_deps_complex(plugins, providers)
+    # check_deps_complex(plugins, providers)
     log.info("%d plugins ready", len(raw_plugins))
 
     with prepare_env(sources) as presrc:
@@ -167,7 +195,10 @@ def run_cli() -> int:
             log.debug("Pre-processing in %s", presrc)
             pre_use = pre_conf["use"]
             if not isinstance(pre_use, list):
-                stop(f"Invalid type: preprocess.use should be list, is actually {type(pre_use)}")
+                stop(
+                    f"Invalid type: preprocess.use should be list, is actually {type(pre_use)}"
+                )
+            solve_compute(providers, "preprocess", pre_use)
     return 0
 
 

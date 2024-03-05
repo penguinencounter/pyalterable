@@ -2,12 +2,15 @@ collect:
     rules:
         - 'example/*'
 
-build:
-    full:
-        use:
-            - image_replace
-        exclude:
-            - '404\.(html|js|ts|css)$'
+#build:
+#    full:
+#        use:
+#            - image_replace
+#        exclude:
+#            - '404\.(html|js|ts|css)$'
+preprocess:
+    use:
+        - test1
 
 plugins:
     parse_html:
@@ -27,44 +30,73 @@ plugins:
             - parse_html
         path: Plugins/image_replace.py
         pipeline:
-            target: project
+            target: file
             match:
                 - '.*\.html'
             entrypoint: main
     test1:
+        provides:
+            - one
         use:
-            - collidable
+            - two
         path: Plugins/test1.py
         pipeline:
             target: project
+            entrypoint: main
     test2:
         provides:
-            - collidable
+            - one
+            - two
         use:
-            - test1
+            - three
         path: Plugins/test2.py
         pipeline:
             target: project
+            entrypoint: main
     test3:
         provides:
-            - collidable
-            - example
+            - two
+            - three
         use:
-            - example
-        path: Plugins/test2.py
+            - four
+        path: Plugins/test3.py
         pipeline:
             target: project
+            entrypoint: main
     test4:
         provides:
-            - example
+            - three
+            - four
         use:
-            - collidable
-        path: Plugins/test2.py
+            - five
+        path: Plugins/test3.py
         pipeline:
             target: project
+            entrypoint: main
     test5:
         provides:
-            - example
-        path: Plugins/test2.py
+            - four
+            - five
+        use:
+            - six
+        path: Plugins/test3.py
         pipeline:
             target: project
+            entrypoint: main
+    test6:
+        provides:
+            - five
+            - six
+        use:
+            - one
+        path: Plugins/test3.py
+        pipeline:
+            target: project
+            entrypoint: main
+    test7:
+        provides:
+            - one
+        path: Plugins/test3.py
+        pipeline:
+            target: project
+            entrypoint: main
