@@ -64,11 +64,6 @@ def check_deps_simple(
     for plugin in plugin_list:
         for provided in plugin.provides:
             provides[provided].append(plugin)
-            if provided in available_names:
-                log.info(
-                    f"Plugin: '{provided}' from more than one source."
-                    f" If you're trying to avoid circular dependencies, ignore this message."
-                )
             available_names.add(provided)
     missing = set(requirements.keys()) - available_names
     if len(missing) > 0:
@@ -183,6 +178,7 @@ def run_cli() -> int:
             )
         for slot in pre_conf["use"]:
             all_requirements[slot].append("'preprocess' action")
+    mapped_plugins = {p.name: p for p in plugins}
     available_slots, providers = check_deps_simple(plugins, all_requirements)
     # check_deps_complex(plugins, providers)
     log.info("%d plugins ready", len(raw_plugins))
@@ -198,7 +194,7 @@ def run_cli() -> int:
                 stop(
                     f"Invalid type: preprocess.use should be list, is actually {type(pre_use)}"
                 )
-            solve_compute(providers, "preprocess", pre_use)
+            solve_compute(mapped_plugins, providers, "preprocess", pre_use)
     return 0
 
 

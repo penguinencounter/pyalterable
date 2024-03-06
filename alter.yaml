@@ -10,7 +10,8 @@ collect:
 #            - '404\.(html|js|ts|css)$'
 preprocess:
     use:
-        - test1
+        - one
+        - two
 
 plugins:
     parse_html:
@@ -34,7 +35,7 @@ plugins:
             match:
                 - '.*\.html'
             entrypoint: main
-    test1:
+    a:
         provides:
             - one
         use:
@@ -43,7 +44,7 @@ plugins:
         pipeline:
             target: project
             entrypoint: main
-    test2:
+    b:
         provides:
             - one
             - two
@@ -53,7 +54,7 @@ plugins:
         pipeline:
             target: project
             entrypoint: main
-    test3:
+    c:
         provides:
             - two
             - three
@@ -63,7 +64,7 @@ plugins:
         pipeline:
             target: project
             entrypoint: main
-    test4:
+    d:
         provides:
             - three
             - four
@@ -73,7 +74,7 @@ plugins:
         pipeline:
             target: project
             entrypoint: main
-    test5:
+    e:
         provides:
             - four
             - five
@@ -83,7 +84,7 @@ plugins:
         pipeline:
             target: project
             entrypoint: main
-    test6:
+    f:
         provides:
             - five
             - six
@@ -93,9 +94,67 @@ plugins:
         pipeline:
             target: project
             entrypoint: main
-    test7:
+    ga:
         provides:
             - one
+            - two
+            - three
+            - four
+            - five
+            - six
+        use:
+            - three
+        path: Plugins/test3.py
+        pipeline:
+            target: project
+            entrypoint: main
+    gb:
+        provides:
+            - one
+            - two
+            - three
+            - four
+            - five
+            - six
+        use:
+            - two
+        path: Plugins/test3.py
+        pipeline:
+            target: project
+            entrypoint: main
+    gc:
+        provides:
+            - one
+            - two
+            - three
+            - four
+            - five
+            - six
+        use:
+            - four
+        path: Plugins/test3.py
+        pipeline:
+            target: project
+            entrypoint: main
+    gd:
+        provides:
+            - one
+            - two
+            - three
+            - four
+            - five
+            - six
+        use:
+            - two
+        path: Plugins/test3.py
+        pipeline:
+            target: project
+            entrypoint: main
+    h:
+        provides:
+            - six
+        use:
+#            - one
         path: Plugins/test3.py
         pipeline:
             target: project
