@@ -1,3 +1,5 @@
 .idea/
 dist/
 .pypirc
+__pycache__/
+
