@@ -10,8 +10,8 @@ collect:
 #            - '404\.(html|js|ts|css)$'
 preprocess:
     use:
-        - one
-        - two
+        - multicall
+        - multicall2
 
 plugins:
     parse_html:
@@ -35,127 +35,66 @@ plugins:
             match:
                 - '.*\.html'
             entrypoint: main
-    a:
+    A:
         provides:
-            - one
+            - multicall
         use:
-            - two
-        path: Plugins/test1.py
+            - B
+            - C
+            - D
+            - E
+            - F
+        path: Plugins/A.py
         pipeline:
             target: project
             entrypoint: main
-    b:
+    A2:
         provides:
-            - one
-            - two
+            - multicall2
         use:
-            - three
-        path: Plugins/test2.py
+            - B
+        path: Plugins/A.py
         pipeline:
             target: project
             entrypoint: main
-    c:
-        provides:
-            - two
-            - three
+    B:
         use:
-            - four
-        path: Plugins/test3.py
+            - C
+            - D
+            - E
+            - F
+        path: Plugins/A.py
         pipeline:
             target: project
             entrypoint: main
-    d:
-        provides:
-            - three
-            - four
+    C:
         use:
-            - five
-        path: Plugins/test3.py
+            - D
+            - E
+            - F
+        path: Plugins/A.py
         pipeline:
             target: project
             entrypoint: main
-    e:
-        provides:
-            - four
-            - five
+    D:
         use:
-            - six
-        path: Plugins/test3.py
+            - E
+            - F
+        path: Plugins/A.py
         pipeline:
             target: project
             entrypoint: main
-    f:
-        provides:
-            - five
-            - six
+    E:
         use:
-            - one
-        path: Plugins/test3.py
+            - F
+        path: Plugins/A.py
         pipeline:
             target: project
             entrypoint: main
-    ga:
-        provides:
-            - one
-            - two
-            - three
-            - four
-            - five
-            - six
+    F:
         use:
-            - three
-        path: Plugins/test3.py
+        path: Plugins/A.py
         pipeline:
             target: project
             entrypoint: main
-    gb:
-        provides:
-            - one
-            - two
-            - three
-            - four
-            - five
-            - six
-        use:
-            - two
-        path: Plugins/test3.py
-        pipeline:
-            target: project
-            entrypoint: main
-    gc:
-        provides:
-            - one
-            - two
-            - three
-            - four
-            - five
-            - six
-        use:
-            - four
-        path: Plugins/test3.py
-        pipeline:
-            target: project
-            entrypoint: main
-    gd:
-        provides:
-            - one
-            - two
-            - three
-            - four
-            - five
-            - six
-        use:
-            - two
-        path: Plugins/test3.py
-        pipeline:
-            target: project
-            entrypoint: main
-    h:
-        provides:
-            - six
-        use:
-#            - one
-        path: Plugins/test3.py
-        pipeline:
-            target: project
-            entrypoint: main
+

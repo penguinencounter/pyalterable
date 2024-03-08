@@ -1,0 +1,14 @@
+collect:
+  rules:
+    - '*'
+preprocess:
+  use:
+    - ok
+plugins:
+  ok:
+    use:
+      - ok
+    path: test.py
+    pipeline:
+      target: project
+      entrypoint: main
