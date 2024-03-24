@@ -17,12 +17,6 @@ class DependencyResolutionError(RuntimeError):
 def compute_plugin(target: AboutPlugin, providers: dict[str, list[AboutPlugin]]) -> tuple[bool, StacksType]:
     attempts = 0
     start = time.perf_counter()
-    internal_log: list[str] = []
-
-    def _log(msg: str):
-        internal_log.append(msg)
-        if len(internal_log) > 10:
-            internal_log.pop(0)
 
     def _helper(at: AboutPlugin, visited: list[str]) -> tuple[bool, StacksType]:
         nonlocal attempts
@@ -61,7 +55,7 @@ class DepLoadStruct(NamedTuple):
 
 
 # WIP TODO
-def compute_load_order(plugins: dict[str, AboutPlugin], stacks: StacksType) -> list[str]:
+def compute_load_order(plugins: dict[str, AboutPlugin], stacks: StacksType) -> list[DepLoadStruct]:
     loaders: dict[str, DepLoadStruct] = {}
     load_order: list[DepLoadStruct] = []
 
@@ -91,9 +85,8 @@ def compute_load_order(plugins: dict[str, AboutPlugin], stacks: StacksType) -> l
                 load_order.append(loader)
                 loaded.add(name)
                 remaining -= 1
-    log.info(loaders)
-    log.info(load_order)
-    return []
+    log.info(' then '.join(map(lambda x: f"'{x.name}'", load_order)))
+    return load_order
 
 
 def compute(
@@ -112,5 +105,5 @@ def compute(
     ok, result = compute_plugin(anon, providers)
     if not ok:
         return False, []
-    log.info(result)
+    # log.info(result)
     load = compute_load_order(all_plugins, result)
