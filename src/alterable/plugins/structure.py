@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import importlib.util as import_util
 import sys
 from hashlib import sha256
