@@ -9,10 +9,10 @@ from tempfile import TemporaryDirectory
 from typing import NoReturn, Optional
 
 from rich.logging import RichHandler
-from strictyaml import load as loadyaml
 
 from alterable.buildsystem import configloader
-from ..api.plugin import AboutPlugin
+from alterable.contrib import list_builtins
+from alterable.plugins.structure import UserPluginSpec, PluginSpec
 from .resolves import compute as solve_compute
 
 logging.basicConfig(
@@ -57,10 +57,10 @@ def prepare_env(sources: list[str]):
 
 
 def check_deps_simple(
-    plugin_list: list[AboutPlugin], requirements: dict[str, list[str]]
+    plugin_list: list[PluginSpec], requirements: dict[str, list[str]]
 ):
     available_names: set[str] = set()
-    provides: dict[str, list[AboutPlugin]] = defaultdict(list)
+    provides: dict[str, list[PluginSpec]] = defaultdict(list)
     for plugin in plugin_list:
         for provided in plugin.provides:
             provides[provided].append(plugin)
@@ -80,11 +80,11 @@ def check_deps_simple(
 
 
 def check_deps_complex(
-    plugin_list: list[AboutPlugin], providers: dict[str, list[AboutPlugin]]
+    plugin_list: list[PluginSpec], providers: dict[str, list[PluginSpec]]
 ):
     def check(
-        target: AboutPlugin,
-        current: Optional[AboutPlugin] = None,
+        target: PluginSpec,
+        current: Optional[PluginSpec] = None,
         visited: Optional[list[str]] = None,
     ):
         if visited is None:
@@ -162,7 +162,9 @@ def run_cli() -> int:
     raw_plugins = conf.get("plugins", {})
     if not isinstance(raw_plugins, dict):
         stop(f"Invalid type: 'plugins' should be a dict")
-    plugins = [AboutPlugin.load(k, v) for k, v in raw_plugins.items()]
+    plugins: list[PluginSpec] = [
+        UserPluginSpec.load(k, v) for k, v in raw_plugins.items()
+    ] + list_builtins()
 
     # Collect a set of every slot needed at any point
     pre_conf = conf.get("preprocess", {})

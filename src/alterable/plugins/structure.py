@@ -7,7 +7,7 @@ import logging
 
 from strictyaml import Seq, Str, Validator
 
-from ..util import mk_stop
+from alterable.util import mk_stop
 
 log = logging.getLogger("core.plugin")
 stop = mk_stop(log)
@@ -30,12 +30,53 @@ class PluginPipelineInfo(NamedTuple):
         return cls("file")
 
 
-class AboutPlugin(NamedTuple):
-    name: str
-    provides: set[str]
-    use: list[str]
-    path: str
-    pipeline: PluginPipelineInfo
+class PluginSpec:
+    def __init__(
+        self,
+        name: str,
+        *,
+        provides: set[str],
+        use: list[str],
+        pipeline: PluginPipelineInfo,
+    ):
+        self.use = use
+        self.provides = provides
+        self.name = name
+        self.pipeline = pipeline
+
+    def resolve(self) -> ModuleType:
+        raise NotImplementedError("can't resolve() abstract PluginSpec")
+
+
+class PreloadPluginSpec(PluginSpec):
+    def __init__(
+        self,
+        name: str,
+        *,
+        provides: set[str],
+        use: list[str],
+        pipeline: PluginPipelineInfo,
+        module: ModuleType,
+    ):
+        super().__init__(name=name, provides=provides, use=use, pipeline=pipeline)
+        self.module = module
+
+    def resolve(self) -> ModuleType:
+        return self.module
+
+
+class UserPluginSpec(PluginSpec):
+    def __init__(
+        self,
+        name: str,
+        *,
+        provides: set[str],
+        use: list[str],
+        pipeline: PluginPipelineInfo,
+        path: str,
+    ):
+        super().__init__(name, provides=provides, use=use, pipeline=pipeline)
+        self.path = path
 
     @classmethod
     def load(cls, name: str, template: dict):
@@ -76,7 +117,7 @@ class AboutPlugin(NamedTuple):
         )
 
 
-def load_plugin(about_plugin: AboutPlugin) -> ModuleType | None:
+def load_user_plugin(about_plugin: UserPluginSpec) -> ModuleType | None:
     hash_name = sha256(about_plugin.name.encode()).hexdigest()
     full_name = f"_alter_generated.plugins.{hash_name}"
     import_spec = import_util.spec_from_file_location(full_name, about_plugin.path)
@@ -89,5 +130,5 @@ def load_plugin(about_plugin: AboutPlugin) -> ModuleType | None:
     return module
 
 
-def run_plugin(plugin: ModuleType, about: AboutPlugin):
+def run_plugin(plugin: ModuleType, about: UserPluginSpec):
     entrypoint = about

@@ -24,7 +24,7 @@ from strictyaml.ruamel.error import MarkedYAMLError
 from strictyaml.validators import MapValidator, Validator
 from strictyaml.yamllocation import YAMLChunk
 
-from ..api.plugin import PluginData
+from alterable.plugins.structure import PluginData
 from ..util import mk_stop
 
 log = logging.getLogger("core.configloader")
