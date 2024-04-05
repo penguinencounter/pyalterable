@@ -2,21 +2,24 @@ import contextlib
 import logging
 import os
 import shutil
-import sys
 from collections import defaultdict
 from glob import glob
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import NoReturn, Optional
 
 from rich.logging import RichHandler
 
-from alterable.buildsystem import configloader
-from alterable.contrib import list_builtins
-from alterable.plugins.structure import UserPluginSpec, PluginSpec
+from .configloader import load as load_config
+from .runner import run_steps
 from .resolves import compute as solve_compute
+from ..contrib import list_builtins
+from ..plugins.structure import UserPluginSpec, PluginSpec
 
 logging.basicConfig(
-    level=logging.DEBUG, format="%(name)s: %(message)s", handlers=[RichHandler()]
+    level=logging.DEBUG,
+    format="%(name)s: %(message)s",
+    handlers=[RichHandler(show_path=False)],
 )
 log = logging.getLogger("core")
 
@@ -138,7 +141,7 @@ def run_cli() -> int:
             f"No configuration file found at {conf_path}. "
             f"Set ALTER_CONF or create alter.toml in the working directory."
         )
-    conf = configloader.load(conf_path).data
+    conf = load_config(conf_path).data
 
     # Collect
     collect_conf = conf.get("collect", {})
@@ -151,13 +154,6 @@ def run_cli() -> int:
         stop("No input rules specified (collect.rules is empty)")
     sources = collect(rules)
     log.info("%d sources", len(sources))
-
-    engine = os.environ.get("PYTHON_EXE", sys.executable)
-    if not engine or not os.path.exists(engine):
-        stop(
-            f"Cannot find Python interpreter. Guessed {engine if engine else '(failed to retrieve)'}. "
-            f"Set PYTHON_EXE to the path of a Python interpreter."
-        )
 
     raw_plugins = conf.get("plugins", {})
     if not isinstance(raw_plugins, dict):
@@ -186,6 +182,7 @@ def run_cli() -> int:
     log.info("%d plugins ready", len(raw_plugins))
 
     with prepare_env(sources) as presrc:
+        tempdir = Path(presrc)
         # Pre-process
         if "use" not in pre_conf:
             log.info("no pre-processing specified, skipping")
@@ -196,7 +193,20 @@ def run_cli() -> int:
                 stop(
                     f"Invalid type: preprocess.use should be list, is actually {type(pre_use)}"
                 )
-            solve_compute(mapped_plugins, providers, "preprocess", pre_use)
+            solve_ok, steps = solve_compute(
+                mapped_plugins, providers, "preprocess", pre_use
+            )
+            if not solve_ok:
+                stop("Preprocessing failed.")
+            try:
+                run_steps(tempdir, steps, mapped_plugins)
+            except Exception as e:
+                log.critical(
+                    f"Preprocessing [bold red]failed[/] because of [red][bold]{type(e).__name__}[/]: "
+                    f"[italic]{e}[/][/]",
+                    extra={"markup": True},
+                )
+                exit(1)
     return 0
 
 

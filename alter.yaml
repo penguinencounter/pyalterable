@@ -8,31 +8,18 @@ collect:
 #            - image_replace
 #        exclude:
 #            - '404\.(html|js|ts|css)$'
+
 preprocess:
     use:
-        - multicall
-        - multicall2
+        - example
 
 plugins:
-    parse_html:
-        provides:
-            - parse_html
-            - collide
-        path: Plugins/parse_html.py
-        pipeline:
-            target: file
-            match:
-                - '.*\.html'
-            entrypoint: main
-    image_replace:
-        provides:
-            - image_replace
+    example:
         use:
             - parse_html
-        path: Plugins/image_replace.py
+        path: example/example_plugin.py
         pipeline:
             target: file
             match:
-                - '.*\.html'
+                - '.*\.html$'
             entrypoint: main
-

@@ -61,7 +61,9 @@ class DepLoadStruct(NamedTuple):
 
 
 # WIP TODO
-def compute_load_order(plugins: dict[str, PluginSpec], stacks: StacksType) -> list[DepLoadStruct]:
+def compute_load_order(
+    plugins: dict[str, PluginSpec], stacks: StacksType
+) -> list[DepLoadStruct]:
     loaders: dict[str, DepLoadStruct] = {}
     load_order: list[DepLoadStruct] = []
 
@@ -94,7 +96,7 @@ def compute_load_order(plugins: dict[str, PluginSpec], stacks: StacksType) -> li
                 load_order.append(loader)
                 loaded.add(name)
                 remaining -= 1
-    log.info(' then '.join(map(lambda x: f"'{x.name}'", load_order)))
+    log.info(" then ".join(map(lambda x: f"'{x.name}'", load_order)))
     return load_order
 
 
@@ -103,10 +105,10 @@ def compute(
     providers: dict[str, list[PluginSpec]],
     reason: str,
     requirements: list[str],
-):
+) -> tuple[bool, list[DepLoadStruct]]:
     anon = PluginSpec(
         name=f"({reason} requirements: {', '.join(requirements)})",
-        pipeline=PluginPipelineInfo("(anonymous)"),
+        pipeline=PluginPipelineInfo.anonymous(),
         provides=set(),
         use=requirements,
     )
@@ -115,3 +117,4 @@ def compute(
         return False, []
     # log.info(result)
     load = compute_load_order(all_plugins, result)
+    return True, load
