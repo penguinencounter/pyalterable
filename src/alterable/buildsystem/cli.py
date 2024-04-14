@@ -13,7 +13,7 @@ from rich.logging import RichHandler
 from .configloader import load as load_config
 from .runner import run_steps
 from .resolves import compute as solve_compute
-from ..contrib import list_builtins
+from ..contrib_plugins import list_builtins
 from ..plugins.structure import UserPluginSpec, PluginSpec
 
 logging.basicConfig(

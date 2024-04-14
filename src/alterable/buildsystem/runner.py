@@ -14,7 +14,9 @@ def run_steps(
     for item in actions:
         source = plugins[item.name]
         try:
-            prepare(source, sandbox)
+            bindings = prepare(source, sandbox)
+            for bind in bindings:
+                bind(None)
         except Exception as e:
             log.critical(
                 f"While preparing [bright_blue]{source.name}[/]: "

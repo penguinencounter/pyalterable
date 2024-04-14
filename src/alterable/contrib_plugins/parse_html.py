@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import Any
+
 from ..plugins.structure import (
     PreloadPluginSpec,
     FilePluginPipelineInfo,
@@ -14,5 +17,5 @@ def about() -> PreloadPluginSpec:
     )
 
 
-def main():
-    pass
+def main(target: Path, ctx: Any):
+    print(target)

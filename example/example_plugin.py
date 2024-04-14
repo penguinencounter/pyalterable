@@ -1,2 +1,2 @@
-def main():
+def main(target, ctx):
     pass

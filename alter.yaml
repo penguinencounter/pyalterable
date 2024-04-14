@@ -19,7 +19,5 @@ plugins:
             - parse_html
         path: example/example_plugin.py
         pipeline:
-            target: file
-            match:
-                - '.*\.html$'
+            target: project
             entrypoint: main
