@@ -1,6 +1,8 @@
 from pathlib import Path
-from typing import Any
 
+from bs4 import BeautifulSoup
+
+from ..plugins.shared_context import FileContext, BaseFileProps
 from ..plugins.structure import (
     PreloadPluginSpec,
     FilePluginPipelineInfo,
@@ -17,5 +19,8 @@ def about() -> PreloadPluginSpec:
     )
 
 
-def main(target: Path, ctx: Any):
-    print(target)
+def main(target: Path, context: FileContext):
+    def lazy_parse(self_: BaseFileProps):
+        return BeautifulSoup(self_.content, "html.parser")
+
+    context.data.new_property("html", lazy_parse)

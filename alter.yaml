@@ -12,6 +12,7 @@ collect:
 preprocess:
     use:
         - example
+        - file_ctx_dbg
 
 plugins:
     example:
@@ -19,5 +20,7 @@ plugins:
             - parse_html
         path: example/example_plugin.py
         pipeline:
-            target: project
+            target: file
+            match:
+                - ''
             entrypoint: main

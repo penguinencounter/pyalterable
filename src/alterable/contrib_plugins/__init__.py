@@ -5,7 +5,7 @@ from typing import Protocol, cast
 from ..plugins.structure import UserPluginSpec, PluginSpec, PreloadPluginSpec
 
 log = logging.getLogger("plugin builtins")
-PLUGIN_LIST = [".parse_html"]
+PLUGIN_LIST = [".parse_html", ".file_context_debugger"]
 
 
 class BuiltinPluginModule(Protocol):

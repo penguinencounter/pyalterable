@@ -11,6 +11,7 @@ import re
 from pathlib import Path
 from typing import Callable, TypeVar, Protocol, Any
 
+from .shared_context import ProjectContext
 from .structure import (
     PluginSpec,
     PluginPipelineInfo,
@@ -38,7 +39,13 @@ PipelineT = TypeVar("PipelineT", bound=PluginPipelineInfo)
 
 
 class _PathInstanceProvider(Protocol):
-    def __call__(self, pipeline: PipelineT, sandbox_base: Path) -> list[Path]:
+    def __call__(
+        self,
+        pipe_info: FilePluginPipelineInfo,
+        sandbox_base: Path,
+        binding: Callable[..., None],
+        context: ProjectContext,
+    ) -> list[Callable[[], None]]:
         ...
 
 
@@ -48,13 +55,21 @@ class PartialPluginCallback(Protocol):
 
 
 def match_project(
-    pipe_info: ProjectPluginPipelineInfo, sandbox_base: Path
-) -> list[Path]:
+    pipe_info: FilePluginPipelineInfo,
+    sandbox_base: Path,
+    binding: Callable[..., None],
+    context: ProjectContext,
+) -> list[Callable[[], None]]:
     assert pipe_info.target == "project"
-    return [sandbox_base]
+    return [functools.partial(binding, sandbox_base, context)]
 
 
-def match_files(pipe_info: FilePluginPipelineInfo, sandbox_base: Path) -> list[Path]:
+def match_files(
+    pipe_info: FilePluginPipelineInfo,
+    sandbox_base: Path,
+    binding: Callable[..., None],
+    context: ProjectContext,
+) -> list[Callable[[], None]]:
     assert pipe_info.target == "file"
     matching = []
     patterns = [re.compile(pat) for pat in pipe_info.rules]
@@ -63,10 +78,14 @@ def match_files(pipe_info: FilePluginPipelineInfo, sandbox_base: Path) -> list[P
             full_path = Path(dir_path) / file
             if any(map(lambda pattern: pattern.search(str(full_path)), patterns)):
                 matching.append(full_path)
-    return matching
+    return [
+        functools.partial(binding, path, context.files[str(path)]) for path in matching
+    ]
 
 
-def prepare(plug: PluginSpec, sandbox_base: Path) -> list[PartialPluginCallback]:
+def prepare(
+    plug: PluginSpec, sandbox_base: Path, context: ProjectContext
+) -> list[Callable[[], Any]]:
     try:
         module = plug.resolve()
     except FileNotFoundError as e:
@@ -104,18 +123,5 @@ def prepare(plug: PluginSpec, sandbox_base: Path) -> list[PartialPluginCallback]
         "project": match_project,
         "file": match_files,
     }[pipeline.target]
-    targets = list_builder(pipeline, sandbox_base)
-
-    bindings: list[PartialPluginCallback] = [
-        functools.partial(entrypoint, target) for target in targets
-    ]
-
-    MAX_SHOW = 2
-    more = ", ..." if len(targets) > MAX_SHOW else ""
-
-    log.debug(
-        f"bound [bright_blue]{plug.name}[/] to [bold green]{len(bindings)}[/] target(s): "
-        f"{', '.join(map(str, targets[:MAX_SHOW]))}{more}",
-        extra={"markup": True},
-    )
+    bindings = list_builder(pipeline, sandbox_base, entrypoint, context)  # type: ignore
     return bindings
