@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from alterable.plugins.shared_context import FileContext, ProjectContext
+from alterable import FileContext, ProjectContext
 
 
 def main(target: Path, ctx: FileContext | ProjectContext):

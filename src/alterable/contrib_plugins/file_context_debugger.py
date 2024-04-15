@@ -1,8 +1,8 @@
 import logging
 from pathlib import Path
 
-from alterable.plugins.shared_context import FileContext
-from alterable.plugins.structure import FilePluginPipelineInfo, PreloadPluginSpec
+from .. import FileContext
+from ..plugins.structure import FilePluginPipelineInfo, PreloadPluginSpec
 
 log = logging.getLogger("file_ctx_dbg")
 
