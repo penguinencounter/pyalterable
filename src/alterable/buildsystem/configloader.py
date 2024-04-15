@@ -6,25 +6,27 @@ from os import PathLike
 import rich
 from rich.markup import escape
 from strictyaml import (
-    load as load_yaml,
-    Map,
-    Str,
-    Seq,
-    Optional,
-    UniqueSeq,
-    MapPattern,
+    YAML,
+    Any,
+    Bool,
+    EmptyDict,
     EmptyList,
     Enum,
-    YAML,
+    Map,
+    MapPattern,
+    Optional,
+    Seq,
+    Str,
+    UniqueSeq,
     YAMLError,
-    Any,
-    EmptyDict,
 )
+from strictyaml import load as load_yaml
 from strictyaml.ruamel.error import MarkedYAMLError
 from strictyaml.validators import MapValidator, Validator
 from strictyaml.yamllocation import YAMLChunk
 
 from alterable.plugins.structure import PluginData
+
 from ..util import mk_stop
 
 log = logging.getLogger("core.configloader")
@@ -97,11 +99,7 @@ schema = Map(
             }
         ),
         Optional("preprocess"): EmptyDict()
-        | Map(
-            {
-                Optional("use"): _slots(),
-            }
-        ),
+        | Map({Optional("use"): _slots(), Optional("ordered"): Bool}),
         Optional("buildsystem"): EmptyDict()
         | MapPattern(
             Str(),

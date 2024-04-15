@@ -1,9 +1,9 @@
 # it RESOLVES dependencies.
 import logging
 import time
-from typing import TypeAlias, NamedTuple
+from typing import NamedTuple, TypeAlias
 
-from ..plugins.structure import UserPluginSpec, PluginPipelineInfo, PluginSpec
+from ..plugins.structure import PluginPipelineInfo, PluginSpec, UserPluginSpec
 
 log = logging.getLogger("resolver")
 

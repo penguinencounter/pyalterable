@@ -2,15 +2,14 @@ import importlib
 import logging
 from typing import Protocol, cast
 
-from ..plugins.structure import UserPluginSpec, PluginSpec, PreloadPluginSpec
+from ..plugins.structure import PluginSpec, PreloadPluginSpec, UserPluginSpec
 
 log = logging.getLogger("plugin builtins")
 PLUGIN_LIST = [".parse_html", ".file_context_debugger"]
 
 
 class BuiltinPluginModule(Protocol):
-    def about(self) -> PreloadPluginSpec:
-        ...
+    def about(self) -> PreloadPluginSpec: ...
 
 
 def list_builtins() -> list[PluginSpec]:

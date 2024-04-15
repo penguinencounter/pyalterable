@@ -1,10 +1,10 @@
 import logging
 from pathlib import Path
 
-from .resolves import DepLoadStruct
 from ..plugins.prepare import prepare
 from ..plugins.shared_context import ProjectContext
 from ..plugins.structure import PluginSpec
+from .resolves import DepLoadStruct
 
 log = logging.getLogger("runner")
 

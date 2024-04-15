@@ -11,7 +11,6 @@ collect:
 
 preprocess:
     use:
-        - example
         - file_ctx_dbg
 
 plugins:

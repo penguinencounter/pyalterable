@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import importlib.util as import_util
 import inspect
+import logging
 import sys
 from hashlib import sha256
 from types import ModuleType
 from typing import NamedTuple, Optional
-import logging
 
 from strictyaml import Seq, Str, Validator
 

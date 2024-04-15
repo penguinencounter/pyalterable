@@ -35,3 +35,6 @@ Homepage = "https://github.com/penguinencounter/pyalterable"
 alterable = "alterable.build:run_cli"
 
 [tool.hatch]
+
+[tool.isort]
+profile = "black"

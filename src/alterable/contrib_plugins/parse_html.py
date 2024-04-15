@@ -2,11 +2,8 @@ from pathlib import Path
 
 from bs4 import BeautifulSoup
 
-from ..plugins.shared_context import FileContext, BaseFileProps
-from ..plugins.structure import (
-    PreloadPluginSpec,
-    FilePluginPipelineInfo,
-)
+from ..plugins.shared_context import BaseFileProps, FileContext
+from ..plugins.structure import FilePluginPipelineInfo, PreloadPluginSpec
 
 
 def about() -> PreloadPluginSpec:

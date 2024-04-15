@@ -3,19 +3,20 @@ The "prepare" stage of loading involves loading the target module,
 verifying that the method described in 'entrypoint' exists, and determining which
 files need to be processed.
 """
+
 import functools
 import inspect
 import logging
 import os
 import re
 from pathlib import Path
-from typing import Callable, TypeVar, Protocol, Any
+from typing import Any, Callable, Protocol, TypeVar
 
 from .shared_context import ProjectContext
 from .structure import (
-    PluginSpec,
-    PluginPipelineInfo,
     FilePluginPipelineInfo,
+    PluginPipelineInfo,
+    PluginSpec,
     ProjectPluginPipelineInfo,
 )
 
@@ -45,13 +46,11 @@ class _PathInstanceProvider(Protocol):
         sandbox_base: Path,
         binding: Callable[..., None],
         context: ProjectContext,
-    ) -> list[Callable[[], None]]:
-        ...
+    ) -> list[Callable[[], None]]: ...
 
 
 class PartialPluginCallback(Protocol):
-    def __call__(self, ctx: Any):
-        ...
+    def __call__(self, ctx: Any): ...
 
 
 def match_project(

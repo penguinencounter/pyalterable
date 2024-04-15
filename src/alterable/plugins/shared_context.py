@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable, Any, Self, TypeVar
+from typing import Any, Callable, Self, TypeVar
 
 
 class BaseProps:
