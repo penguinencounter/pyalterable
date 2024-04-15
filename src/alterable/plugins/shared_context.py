@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Callable, Self, TypeVar
+from typing import Any, Callable, Self, TypeVar, cast
 
 
 class BaseProps:
@@ -42,7 +42,7 @@ class BaseProps:
 
     def new_property(self, target: str, provider: Callable[[Self], Any]):
         self.__dict__[target] = None
-        self._auto_props[target] = provider
+        self._auto_props[target] = cast(provider, Callable[[Self], Any])
 
 
 class BaseFileProps(BaseProps):

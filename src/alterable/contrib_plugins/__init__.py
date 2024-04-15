@@ -2,7 +2,7 @@ import importlib
 import logging
 from typing import Protocol, cast
 
-from ..plugins.structure import PluginSpec, PreloadPluginSpec, UserPluginSpec
+from ..plugins.structure import PluginSpec, PreloadPluginSpec
 
 log = logging.getLogger("plugin builtins")
 PLUGIN_LIST = [".parse_html", ".file_context_debugger"]
@@ -34,7 +34,8 @@ def list_builtins() -> list[PluginSpec]:
             plugins.append(plugin)
         except ImportError as e:
             log.debug(
-                f"load of [bright_blue]{target}[/] [yellow][bold]failed[/] because of an import error:[/] [italic]{e}[/]",
+                f"load of [bright_blue]{target}[/] [yellow][bold]failed[/] "
+                f"because of an import error:[/] [italic]{e}[/]",
                 extra={"markup": True},
             )
         except Exception as e:

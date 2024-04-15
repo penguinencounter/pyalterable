@@ -13,12 +13,7 @@ from pathlib import Path
 from typing import Any, Callable, Protocol, TypeVar
 
 from .shared_context import ProjectContext
-from .structure import (
-    FilePluginPipelineInfo,
-    PluginPipelineInfo,
-    PluginSpec,
-    ProjectPluginPipelineInfo,
-)
+from .structure import FilePluginPipelineInfo, PluginPipelineInfo, PluginSpec
 
 Ret = TypeVar("Ret")
 log = logging.getLogger("plugins.prepare")

@@ -3,7 +3,7 @@ import logging
 import time
 from typing import NamedTuple, TypeAlias
 
-from ..plugins.structure import PluginPipelineInfo, PluginSpec, UserPluginSpec
+from ..plugins.structure import PluginPipelineInfo, PluginSpec
 
 log = logging.getLogger("resolver")
 
@@ -36,7 +36,7 @@ def compute_plugin(
                     stacks[requirement] = (provider.name, stack_)
                     usable_dependencies.append(provider)
             if len(usable_dependencies) == 0:
-                log.debug("none of the providers for %s are usable", requirement)
+                # log.debug("none of the providers for %s are usable", requirement)
                 return False, {}
 
         return True, stacks.copy()
@@ -74,8 +74,8 @@ def compute_load_order(
             loaders[solution[0]].load_after.update(
                 map(lambda x: x[0], solution[1].values())
             )
-            for k2, v2 in solution[1].items():
-                _traverse(solution[1])
+            # for k2, v2 in solution[1].items():
+            _traverse(solution[1])
 
     _traverse(stacks)
     remaining = len(loaders)

@@ -12,6 +12,7 @@ from strictyaml import (
     EmptyDict,
     EmptyList,
     Enum,
+    Int,
     Map,
     MapPattern,
     Optional,
@@ -91,6 +92,13 @@ class _PipelineValidator(MapValidator):
         err_ctx.pop()
 
 
+def _deps(*, default_ordered: bool):
+    return {
+        Optional("use"): _slots(),
+        Optional("ordered", default=default_ordered): Bool(),
+    }
+
+
 schema = Map(
     {
         "collect": Map(
@@ -98,14 +106,13 @@ schema = Map(
                 "rules": _patterns(False),
             }
         ),
-        Optional("preprocess"): EmptyDict()
-        | Map({Optional("use"): _slots(), Optional("ordered"): Bool}),
+        Optional("preprocess"): EmptyDict() | Map(_deps(default_ordered=True)),
         Optional("buildsystem"): EmptyDict()
         | MapPattern(
             Str(),
             Map(
-                {
-                    Optional("use"): _slots(),
+                _deps(default_ordered=True)
+                | {
                     Optional("exclude"): _patterns(True),
                 }
             ),
@@ -114,10 +121,11 @@ schema = Map(
         | MapPattern(
             Str(),
             Map(
-                {
+                _deps(default_ordered=False)
+                | {
                     Optional("provides"): _slots(),
-                    Optional("use"): _slots(),
                     "path": Str(),
+                    Optional("priority", default=0): Int(),
                     "pipeline": _PipelineValidator(),
                 }
             ),

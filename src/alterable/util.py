@@ -1,6 +1,5 @@
 import logging
-from collections.abc import Callable
-from typing import NoReturn, Optional, Protocol
+from typing import NoReturn, Protocol
 
 
 class StopProtocol(Protocol):

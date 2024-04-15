@@ -11,9 +11,115 @@ collect:
 
 preprocess:
     use:
-        - file_ctx_dbg
+#        - b1
+        - b2
+        - b3
+        - b4
+#        - z
+
 
 plugins:
+    a1:
+        use:
+            - b2
+        provides:
+            - b1
+        path: example/example_plugin.py
+        pipeline:
+            target: project
+            entrypoint: main
+    c1:
+        use:
+            - b2
+        provides:
+            - b1
+        path: example/example_plugin.py
+        pipeline:
+            target: project
+            entrypoint: main
+    a2:
+        use:
+            - b3
+        provides:
+            - b1
+            - b2
+        path: example/example_plugin.py
+        pipeline:
+            target: project
+            entrypoint: main
+    c2:
+        use:
+            - b3
+        provides:
+            - b2
+        path: example/example_plugin.py
+        pipeline:
+            target: project
+            entrypoint: main
+    a3:
+        use:
+            - b4
+        provides:
+            - b2
+            - b3
+        path: example/example_plugin.py
+        pipeline:
+            target: project
+            entrypoint: main
+    c3:
+        use:
+            - b4
+        provides:
+            - b3
+        path: example/example_plugin.py
+        pipeline:
+            target: project
+            entrypoint: main
+    a4:
+        use:
+            - b5
+        provides:
+            - b4
+            - b3
+        path: example/example_plugin.py
+        pipeline:
+            target: project
+            entrypoint: main
+    c4:
+        use:
+            - b5
+        provides:
+            - b4
+        path: example/example_plugin.py
+        pipeline:
+            target: project
+            entrypoint: main
+    a5:
+        use:
+            - b1
+        provides:
+            - b4
+            - b5
+        path: example/example_plugin.py
+        pipeline:
+            target: project
+            entrypoint: main
+    c5:
+        use:
+            - b1
+        provides:
+            - b5
+        path: example/example_plugin.py
+        pipeline:
+            target: project
+            entrypoint: main
+    z:
+        provides:
+            - b1
+        path: example/example_plugin.py
+        pipeline:
+            target: project
+            entrypoint: main
     example:
         use:
             - parse_html
